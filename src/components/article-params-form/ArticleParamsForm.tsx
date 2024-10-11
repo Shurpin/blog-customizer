@@ -3,10 +3,11 @@ import { Button } from 'src/ui/button';
 
 import clsx from 'clsx';
 import styles from './ArticleParamsForm.module.scss';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
 	backgroundColors,
 	contentWidthArr,
+	defaultArticleState,
 	fontColors,
 	fontFamilyClasses,
 	fontFamilyOptions,
@@ -17,21 +18,65 @@ import { RadioGroup } from 'src/ui/radio-group';
 import { Separator } from 'src/ui/separator';
 import { Text } from 'src/ui/text';
 
-export const ArticleParamsForm = () => {
+type TProps = {
+	defaultAppState: typeof defaultArticleState;
+	onSubmit: (value: typeof defaultArticleState) => void;
+};
+
+export const ArticleParamsForm = ({ defaultAppState, onSubmit }: TProps) => {
+	const rootRef = useRef<HTMLDivElement>(null);
+
 	const [isOpen, setIsOpen] = useState(false);
-	const [fontFamilyState, setFontFamilyState] = useState(fontFamilyOptions[0]);
-	const [fontSizeState, setFontSizeState] = useState(fontSizeOptions[0]);
-	const [fontColorsState, setFontColorsState] = useState(fontColors[0]);
-	const [backgroundState, setBackgroundState] = useState(backgroundColors[0]);
-	const [contentWidthArrState, setContentWidthArrState] = useState(
-		contentWidthArr[0]
+	const [fontFamilyState, setFontFamilyState] = useState(
+		defaultAppState.fontFamilyOption
 	);
+	const [fontSizeState, setFontSizeState] = useState(
+		defaultAppState.fontSizeOption
+	);
+	const [fontColorsState, setFontColorsState] = useState(
+		defaultAppState.fontColor
+	);
+	const [backgroundState, setBackgroundState] = useState(
+		defaultAppState.backgroundColor
+	);
+	const [contentWidthArrState, setContentWidthArrState] = useState(
+		defaultAppState.contentWidth
+	);
+
+	useEffect(() => {
+		const handleClick = (event: MouseEvent) => {
+			const { target } = event;
+			if (target instanceof Node && !rootRef.current?.contains(target)) {
+				isOpen && setIsOpen(false);
+			}
+		};
+
+		window.addEventListener('mousedown', handleClick);
+
+		return () => {
+			window.removeEventListener('mousedown', handleClick);
+		};
+	}, [setIsOpen, isOpen]);
+
 	return (
-		<>
+		<div ref={rootRef}>
 			<ArrowButton isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
 			<aside
 				className={clsx(styles.container, isOpen && styles.container_open)}>
-				<form className={styles.form}>
+				<form
+					className={styles.form}
+					onSubmit={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+
+						onSubmit({
+							fontFamilyOption: fontFamilyState,
+							fontColor: fontColorsState,
+							backgroundColor: backgroundState,
+							contentWidth: contentWidthArrState,
+							fontSizeOption: fontSizeState,
+						});
+					}}>
 					<div className={styles.elem}>
 						<Text
 							family={
@@ -89,17 +134,26 @@ export const ArticleParamsForm = () => {
 							title='Сбросить'
 							htmlType='reset'
 							type='clear'
-							onClick={() => setIsOpen(!isOpen)}
+							onClick={() => {
+								setFontFamilyState(defaultArticleState.fontFamilyOption);
+								setFontColorsState(defaultArticleState.fontColor);
+								setBackgroundState(defaultArticleState.backgroundColor);
+								setContentWidthArrState(defaultArticleState.contentWidth);
+								setFontSizeState(defaultArticleState.fontSizeOption);
+
+								onSubmit({
+									fontFamilyOption: defaultArticleState.fontFamilyOption,
+									fontColor: defaultArticleState.fontColor,
+									backgroundColor: defaultArticleState.backgroundColor,
+									contentWidth: defaultArticleState.contentWidth,
+									fontSizeOption: defaultArticleState.fontSizeOption,
+								});
+							}}
 						/>
-						<Button
-							title='Применить'
-							htmlType='submit'
-							type='apply'
-							onClick={() => setIsOpen(!isOpen)}
-						/>
+						<Button title='Применить' htmlType='submit' type='apply' />
 					</div>
 				</form>
 			</aside>
-		</>
+		</div>
 	);
 };

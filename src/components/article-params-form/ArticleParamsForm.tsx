@@ -9,7 +9,6 @@ import {
 	contentWidthArr,
 	defaultArticleState,
 	fontColors,
-	fontFamilyClasses,
 	fontFamilyOptions,
 	fontSizeOptions,
 } from 'src/constants/articleProps';
@@ -78,10 +77,7 @@ export const ArticleParamsForm = ({ defaultAppState, onSubmit }: TProps) => {
 						});
 					}}>
 					<div className={styles.elem}>
-						<Text
-							family={
-								fontFamilyState.className as (typeof fontFamilyClasses)[0]
-							}>
+						<Text size={31} weight={800} family='open-sans'>
 							Задайте параметры
 						</Text>
 					</div>
